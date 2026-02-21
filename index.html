@@ -1,53 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-  <title>Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Dashboard Telemetria</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f172a;
+  color:white;
+}
+
+header{
+  background:#020617;
+  padding:15px;
+  font-size:20px;
+  font-weight:bold;
+  border-bottom:1px solid #1e293b;
+}
+
+.container{
+  padding:20px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.card{
+  background:#020617;
+  padding:20px;
+  border-radius:10px;
+  border:1px solid #1e293b;
+}
+
+.card-title{
+  color:#94a3b8;
+  font-size:14px;
+}
+
+.card-value{
+  font-size:28px;
+  font-weight:bold;
+  margin-top:5px;
+}
+
+.status{
+  margin-bottom:15px;
+  font-size:14px;
+}
+
+.online{
+  color:#22c55e;
+}
+
+.offline{
+  color:#ef4444;
+}
+
+.chart-container{
+  background:#020617;
+  padding:20px;
+  border-radius:10px;
+  border:1px solid #1e293b;
+}
+</style>
+
 </head>
 <body>
 
-<h2>Telemetria em Tempo Real</h2>
+<header>
+Dashboard Telemetria
+</header>
 
-<p>Velocidade: <span id="velocidade">0</span> km/h</p>
-<p>RPM: <span id="rpm">0</span></p>
-<p>Combustível: <span id="combustivel">0</span>%</p>
-<p>Produtividade: <span id="produtividade">0</span>%</p>
+<div class="container">
 
+<div class="status">
+Status: <span id="status" class="offline">Desconectado</span>
+</div>
+
+<div class="cards">
+
+<div class="card">
+<div class="card-title">Velocidade</div>
+<div class="card-value"><span id="velocidade">0</span> km/h</div>
+</div>
+
+<div class="card">
+<div class="card-title">RPM</div>
+<div class="card-value"><span id="rpm">0</span></div>
+</div>
+
+<div class="card">
+<div class="card-title">Combustível</div>
+<div class="card-value"><span id="combustivel">0</span>%</div>
+</div>
+
+<div class="card">
+<div class="card-title">Produtividade</div>
+<div class="card-value"><span id="produtividade">0</span>%</div>
+</div>
+
+</div>
+
+<div class="chart-container">
 <canvas id="grafico"></canvas>
+</div>
+
+</div>
 
 <script>
-const ws = new WebSocket('wss://telemetria-production.up.railway.app');
 
-const ctx = document.getElementById('grafico');
+const statusEl = document.getElementById("status");
+
+const ws = new WebSocket("wss://telemetria-production-f09b.up.railway.app");
+
+ws.onopen = () => {
+  statusEl.innerText = "Online";
+  statusEl.className = "online";
+};
+
+ws.onclose = () => {
+  statusEl.innerText = "Desconectado";
+  statusEl.className = "offline";
+};
+
+ws.onerror = () => {
+  statusEl.innerText = "Erro de conexão";
+  statusEl.className = "offline";
+};
+
+const ctx = document.getElementById("grafico");
+
 const chart = new Chart(ctx, {
-  type: 'line',
+  type: "line",
   data: {
     labels: [],
     datasets: [{
-      label: 'Velocidade',
-      data: []
+      label: "Velocidade km/h",
+      data: [],
+      borderWidth:2,
+      tension:0.3
     }]
+  },
+  options:{
+    plugins:{
+      legend:{
+        labels:{color:"white"}
+      }
+    },
+    scales:{
+      x:{ticks:{color:"white"}},
+      y:{ticks:{color:"white"}}
+    }
   }
 });
 
 ws.onmessage = (event) => {
+
   const dados = JSON.parse(event.data);
 
-  document.getElementById('velocidade').innerText = dados.velocidade;
-  document.getElementById('rpm').innerText = dados.rpm;
-  document.getElementById('combustivel').innerText = dados.combustivel;
-  document.getElementById('produtividade').innerText = dados.produtividade;
+  document.getElementById("velocidade").innerText = dados.velocidade;
+  document.getElementById("rpm").innerText = dados.rpm;
+  document.getElementById("combustivel").innerText = dados.combustivel;
+  document.getElementById("produtividade").innerText = dados.produtividade;
 
   chart.data.labels.push(new Date().toLocaleTimeString());
   chart.data.datasets[0].data.push(dados.velocidade);
 
-  if (chart.data.labels.length > 10) {
+  if(chart.data.labels.length > 20){
     chart.data.labels.shift();
     chart.data.datasets[0].data.shift();
   }
 
   chart.update();
 };
+
 </script>
 
 </body>
