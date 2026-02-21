@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard Máquina Agrícola</title>
+  <title>Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -16,7 +16,7 @@
 <canvas id="grafico"></canvas>
 
 <script>
-const ws = new WebSocket("wss://telemetria-production.up.railway.app");
+const ws = new WebSocket('wss://telemetria-production.up.railway.app');
 
 const ctx = document.getElementById('grafico');
 const chart = new Chart(ctx, {

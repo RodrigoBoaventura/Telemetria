@@ -1,37 +1,37 @@
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
+const WebSocket = require('ws');
+const express = require('express');
 
 const app = express();
 
-// necessário para Railway reconhecer que o servidor está online
-app.get("/", (req, res) => {
-  res.send("Servidor WebSocket online");
-});
-
-const server = http.createServer(app);
-
-const wss = new WebSocket.Server({ server });
-
+// ESSENCIAL para Railway
 const PORT = process.env.PORT || 3000;
 
-server.listen(PORT, () => {
-  console.log("Servidor rodando na porta", PORT);
+app.get('/', (req, res) => {
+  res.send('Servidor online');
 });
+
+const server = app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
+
+const wss = new WebSocket.Server({ server });
 
 function gerarTelemetria() {
   return {
     velocidade: Math.floor(Math.random() * 40) + 5,
     rpm: Math.floor(Math.random() * 1500) + 1000,
     combustivel: Math.floor(Math.random() * 100),
-    produtividade: Math.floor(Math.random() * 100),
+    produtividade: Math.floor(Math.random() * 100)
   };
 }
 
-wss.on("connection", (ws) => {
-  console.log("Cliente conectado");
+setInterval(() => {
+  const dados = JSON.stringify(gerarTelemetria());
 
-  setInterval(() => {
-    ws.send(JSON.stringify(gerarTelemetria()));
-  }, 2000);
-});
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(dados);
+    }
+  });
+
+}, 2000);
