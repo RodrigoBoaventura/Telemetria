@@ -16,7 +16,7 @@
 <canvas id="grafico"></canvas>
 
 <script>
-const ws = new WebSocket('ws://localhost:3000');
+const ws = new WebSocket('wss://telemetria-production.up.railway.app');
 
 const ctx = document.getElementById('grafico');
 const chart = new Chart(ctx, {

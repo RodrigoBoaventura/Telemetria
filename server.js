@@ -1,9 +1,9 @@
 const WebSocket = require('ws');
 const express = require('express');
-
+const PORT = process.env.PORT || 3000;
 const app = express();
-const server = app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+const server = app.listen(PORT, () => {
+  console.log('Servidor rodando na porta ' + PORT);
 });
 
 const wss = new WebSocket.Server({ server });
